@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$CPT - Captain Token | SoarLaunch</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0b0f; color: #fff; min-height: 100vh; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 40px; background: rgba(10,11,15,0.95); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .logo { font-size: 24px; font-weight: 700; }
+        .logo span { color: #3b82f6; }
+        .nav-links { display: flex; gap: 32px; }
+        .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; }
+        .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: #fff; }
+        .main { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .project-header { display: flex; gap: 24px; margin-bottom: 32px; }
+        .project-logo { width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 36px; }
+        .project-title h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(34,197,94,0.2); color: #22c55e; margin-left: 12px; }
+        .project-ticker { color: rgba(255,255,255,0.5); font-size: 16px; margin-bottom: 12px; }
+        .tags { display: flex; gap: 8px; }
+        .tag { padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 6px; font-size: 12px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; }
+        .stat-label { color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
+        .stat-value { font-size: 24px; font-weight: 700; }
+        .stat-value.green { color: #22c55e; }
+        .stat-value.blue { color: #3b82f6; }
+        .contract-section { background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1)); border: 1px solid rgba(59,130,246,0.3); border-radius: 16px; padding: 24px; margin-bottom: 32px; }
+        .contract-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+        .contract-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 16px; font-family: monospace; }
+        .contract-address { color: #3b82f6; word-break: break-all; }
+        .contract-placeholder { color: rgba(255,255,255,0.4); font-style: italic; }
+        .about-section { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; margin-bottom: 32px; }
+        .section-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+        .about-text { color: rgba(255,255,255,0.7); line-height: 1.7; font-size: 14px; }
+        .about-text p { margin-bottom: 16px; }
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+        .info-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; }
+        .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: rgba(255,255,255,0.5); font-size: 14px; }
+        .info-value { font-size: 14px; font-weight: 500; }
+        .footer { margin-top: 60px; padding: 40px 20px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; color: rgba(255,255,255,0.3); font-size: 12px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">SOAR<span>Launch</span></div>
+        <div class="nav-links">
+            <a href="#">Explore</a>
+            <a href="#">Launchpad</a>
+            <a href="#">Staking</a>
+            <a href="#">Portfolio</a>
+            <a href="#">Docs</a>
+        </div>
+        <button class="btn btn-primary">Connect Wallet</button>
+    </nav>
+
+    <main class="main">
+        <div class="project-header">
+            <div class="project-logo">🚀</div>
+            <div>
+                <div class="project-title">
+                    <h1>Captain Token <span class="badge">LIVE</span></h1>
+                </div>
+                <div class="project-ticker">$CPT</div>
+                <div class="tags">
+                    <span class="tag">DeFi</span>
+                    <span class="tag">Solana</span>
+                    <span class="tag">Gaming</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Current Price</div>
+                <div class="stat-value">$0.0842</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">24h Change</div>
+                <div class="stat-value green">+12.4%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Market Cap</div>
+                <div class="stat-value">$4.2M</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Raised</div>
+                <div class="stat-value blue">$1.8M</div>
+            </div>
+        </div>
+
+        <div class="contract-section">
+            <div class="contract-title">📋 Contract Address</div>
+            <div class="contract-box">
+                <span class="contract-placeholder">Contract address will be announced soon...</span>
+            </div>
+        </div>
+
+        <div class="about-section">
+            <h2 class="section-title">About Captain Token</h2>
+            <div class="about-text">
+                <p>Captain Token ($CPT) is a revolutionary DeFi protocol built on Solana, designed to empower the next generation of decentralized gaming and metaverse experiences. Our mission is to create a seamless bridge between traditional gaming economies and blockchain-based asset ownership.</p>
+                <p>The Captain ecosystem features a unique play-to-earn mechanism that rewards players for their time and skill, while maintaining a sustainable tokenomics model that benefits long-term holders. With our innovative staking pools and liquidity incentives, we're building a community-driven platform that puts users first.</p>
+                <p>Our team consists of veteran game developers, blockchain engineers, and DeFi experts who have previously worked at leading companies in both the gaming and cryptocurrency industries. We're committed to delivering a polished product that meets the highest standards of quality and security.</p>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="section-title">Token Information</div>
+                <div class="info-row"><span class="info-label">Token Name</span><span class="info-value">Captain Token</span></div>
+                <div class="info-row"><span class="info-label">Symbol</span><span class="info-value">$CPT</span></div>
+                <div class="info-row"><span class="info-label">Network</span><span class="info-value">Solana</span></div>
+                <div class="info-row"><span class="info-label">Total Supply</span><span class="info-value">100,000,000</span></div>
+            </div>
+            <div class="info-card">
+                <div class="section-title">Sale Details</div>
+                <div class="info-row"><span class="info-label">Launch Price</span><span class="info-value">$0.065</span></div>
+                <div class="info-row"><span class="info-label">Current ROI</span><span class="info-value" style="color:#22c55e">+29.5%</span></div>
+                <div class="info-row"><span class="info-label">Participants</span><span class="info-value">12,847</span></div>
+                <div class="info-row"><span class="info-label">Vesting</span><span class="info-value">20% TGE, 6mo</span></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">© 2025 SOARLaunch. All rights reserved.</footer>
+</body>
+</html>
