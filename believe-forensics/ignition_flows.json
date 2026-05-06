@@ -1,0 +1,104 @@
+[
+  {
+    "sig": "4F5BBQUehyMk92qc2hc14ygof9C7coAXtjtG8CQPwkyVb89g1p44buWo6PmR4TSzGu6UKnMQ1zEiALbUybVUddam",
+    "ts": 1777838332,
+    "dt": "19:58:52",
+    "feePayer": "GCvHhEUYQwTJ8jyf8Lc4bv8jBXyZU4LMMsZCobwEPzvM",
+    "fp_believe_net": 0,
+    "fp_wsol_net": -1.973615,
+    "fp_sol_net": 0,
+    "believe_net": {
+      "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": -228448.443932018,
+      "ARu4n5mFdZogZAravu7CcizaojWnS6oqka37gdLT5SZn": 0.0,
+      "Bs6cTDM6Ac6WfenqEG4mNp156b7ZYGMcTXzo2MoZxtg5": 228448.443932018
+    },
+    "wsol_net": {
+      "GCvHhEUYQwTJ8jyf8Lc4bv8jBXyZU4LMMsZCobwEPzvM": -1.973614841,
+      "ARu4n5mFdZogZAravu7CcizaojWnS6oqka37gdLT5SZn": 0.0,
+      "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": 1.973614841
+    },
+    "max_believe_receiver": "Bs6cTDM6Ac6WfenqEG4mNp156b7ZYGMcTXzo2MoZxtg5",
+    "max_believe_amount": 228448.4439,
+    "type": "SWAP"
+  },
+  {
+    "sig": "2sy5avKiPHhVdK9XHmEKjg9ZDm9mVsovWBn5adCxhMWSNpCqPu8cXYx4rHNM9udQBTdDe69yyvDBFwfAZQU8R3c2",
+    "ts": 1777838332,
+    "dt": "19:58:52",
+    "feePayer": "GxDC9e7SP9mzhDo4re5HbpLa2RW7gB9DtmThx4i4pXSq",
+    "fp_believe_net": 0.0,
+    "fp_wsol_net": 0.000121,
+    "fp_sol_net": 1e-05,
+    "believe_net": {
+      "DXwjTJm7zshc1RsWDspU59WVtdrjj1Unxrz2KhQ7tW11": -3624.231218717,
+      "GxDC9e7SP9mzhDo4re5HbpLa2RW7gB9DtmThx4i4pXSq": 0.0,
+      "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": 3624.231218717
+    },
+    "wsol_net": {
+      "GxDC9e7SP9mzhDo4re5HbpLa2RW7gB9DtmThx4i4pXSq": 0.00012061000000000016,
+      "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": -0.00012061000000000016
+    },
+    "max_believe_receiver": "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC",
+    "max_believe_amount": 3624.2312,
+    "type": "TRANSFER"
+  },
+  {
+    "sig": "4PnKa8b7hBWNoDHDK1h3CTJYSem8ui8KS8nSVJ7xdwGfZq6QW3FaeoDVzvm6VwrRenSTS8kCSwjZRjbdhMXghazE",
+    "ts": 1777838332,
+    "dt": "19:58:52",
+    "feePayer": "GgGap6tiUKhD8XeUZaHpVB3rerb3zKWNouWQJHozDujt",
+    "fp_believe_net": 0.0,
+    "fp_wsol_net": 1.7e-05,
+    "fp_sol_net": -1e-05,
+    "believe_net": {
+      "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": 0.0,
+      "GgGap6tiUKhD8XeUZaHpVB3rerb3zKWNouWQJHozDujt": 0.0
+    },
+    "wsol_net": {
+      "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": -0.004432655,
+      "GgGap6tiUKhD8XeUZaHpVB3rerb3zKWNouWQJHozDujt": 1.724699999999975e-05,
+      "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1": 0.004415408
+    },
+    "max_believe_receiver": "",
+    "max_believe_amount": 0,
+    "type": "SWAP"
+  },
+  {
+    "sig": "2jipUmvs22mEMigmKxaWenBzzenTqBvG8CqvmUKTjdxKwNLBMdkFbNuE6sfGWZv8Zp3bQHPj5BNdnPGE3vXziEvs",
+    "ts": 1777838326,
+    "dt": "19:58:46",
+    "feePayer": "APVT9fhDpfq5qf2yJFtEesfuz3ziPf8dRfFkpJ3gYuLu",
+    "fp_believe_net": -267599.1473,
+    "fp_wsol_net": 0,
+    "fp_sol_net": 0,
+    "believe_net": {
+      "APVT9fhDpfq5qf2yJFtEesfuz3ziPf8dRfFkpJ3gYuLu": -267599.147290415,
+      "62N5myBG3E2pB1AhLdDi9SFfLP78Y7jHNkLa4qt5NjLK": 267599.147290415
+    },
+    "wsol_net": {},
+    "max_believe_receiver": "62N5myBG3E2pB1AhLdDi9SFfLP78Y7jHNkLa4qt5NjLK",
+    "max_believe_amount": 267599.1473,
+    "type": "TRANSFER"
+  },
+  {
+    "sig": "4X15HVTqnyPbGjVP76h8kvhoxzjJ4s19cf5CkaomSCWtvvx9GweCGRwzidzEyhbBxmeCjonbcXiHJgZHFbr193sD",
+    "ts": 1777838318,
+    "dt": "19:58:38",
+    "feePayer": "GgGap6tiUKhD8XeUZaHpVB3rerb3zKWNouWQJHozDujt",
+    "fp_believe_net": 0.0,
+    "fp_wsol_net": 3.2e-05,
+    "fp_sol_net": -1.7e-05,
+    "believe_net": {
+      "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": 0.0,
+      "GgGap6tiUKhD8XeUZaHpVB3rerb3zKWNouWQJHozDujt": 0.0
+    },
+    "wsol_net": {
+      "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": -0.005931111,
+      "GgGap6tiUKhD8XeUZaHpVB3rerb3zKWNouWQJHozDujt": 3.213800000000013e-05,
+      "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1": 0.005898973
+    },
+    "max_believe_receiver": "",
+    "max_believe_amount": 0,
+    "type": "SWAP"
+  }
+]

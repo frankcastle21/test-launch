@@ -1,0 +1,117 @@
+{
+  "FkaLnX17cXZGyeu3kZGdHCNdFMJJzBrPPYVvd18B3MZp": {
+    "label": "Top_ignition_1_13txs",
+    "sample_oldest": "2026-05-06 04:14",
+    "sample_newest": "2026-05-06 04:18",
+    "tx_types": {
+      "SWAP": 98,
+      "UNKNOWN": 1,
+      "INITIALIZE_ACCOUNT": 1
+    },
+    "role": "other",
+    "net_believe": 0,
+    "net_sol": -0.0084,
+    "top_funder": "3epyFweiQNFvfCFWic3C8AKMzeuvMsYvF7u7fVZTWcYH",
+    "funder_amt_sol": 54.8234,
+    "pump_txs_count": 0,
+    "proj_wallet_link": null
+  },
+  "APVT9fhDpfq5qf2yJFtEesfuz3ziPf8dRfFkpJ3gYuLu": {
+    "label": "Top_ignition_2_12txs_267K_transfer",
+    "sample_oldest": "2026-05-05 19:09",
+    "sample_newest": "2026-05-06 03:51",
+    "tx_types": {
+      "SWAP": 53,
+      "TRANSFER": 47
+    },
+    "role": "other",
+    "net_believe": 0,
+    "net_sol": -0.0025,
+    "top_funder": "no_large_sol_inflow_found",
+    "funder_amt_sol": 0,
+    "pump_txs_count": 0,
+    "proj_wallet_link": null
+  },
+  "GCvHhEUYQwTJ8jyf8Lc4bv8jBXyZU4LMMsZCobwEPzvM": {
+    "label": "Top_ignition_3_10txs_MM_bot",
+    "sample_oldest": "2026-05-06 03:39",
+    "sample_newest": "2026-05-06 04:18",
+    "tx_types": {
+      "SWAP": 54,
+      "UNKNOWN": 23,
+      "TRANSFER": 23
+    },
+    "role": "seller",
+    "net_believe": -793023.22,
+    "net_sol": -0.002,
+    "top_funder": "no_large_sol_inflow_found",
+    "funder_amt_sol": 0,
+    "pump_txs_count": 0,
+    "proj_wallet_link": null
+  },
+  "8L2y55D11k63CAftvW7uMM2mBhtMxLoLnivG9uY2bt8j": {
+    "label": "Top_ignition_4_10txs",
+    "sample_oldest": "2026-05-06 04:07",
+    "sample_newest": "2026-05-06 04:18",
+    "tx_types": {
+      "SWAP": 41,
+      "TRANSFER": 59
+    },
+    "role": "arb/LP",
+    "net_believe": 0.45,
+    "net_sol": -0.0037,
+    "top_funder": "no_large_sol_inflow_found",
+    "funder_amt_sol": 0,
+    "pump_txs_count": 0,
+    "proj_wallet_link": null
+  },
+  "CdSkvzb45HpGCFAFBEzCUwYsgpXYW8GfVdmfGtkadG8i": {
+    "label": "Active_ignition_5_6txs",
+    "sample_oldest": "2026-05-05 23:32",
+    "sample_newest": "2026-05-06 03:56",
+    "tx_types": {
+      "UNKNOWN": 42,
+      "TRANSFER": 37,
+      "TOKEN_MINT": 4,
+      "SWAP": 17
+    },
+    "role": "other",
+    "net_believe": 0,
+    "net_sol": -0.0331,
+    "top_funder": "no_large_sol_inflow_found",
+    "funder_amt_sol": 0,
+    "pump_txs_count": 0,
+    "proj_wallet_link": null
+  },
+  "GoGoGo6N99mpyB7rfzhw2R4fXmaFctURXHaHMoGCyoLD": {
+    "label": "Active_ignition_6_5txs_also_late_buyer",
+    "sample_oldest": "2026-05-06 03:57",
+    "sample_newest": "2026-05-06 04:18",
+    "tx_types": {
+      "SWAP": 100
+    },
+    "role": "other",
+    "net_believe": 0,
+    "net_sol": -0.0008,
+    "top_funder": "no_large_sol_inflow_found",
+    "funder_amt_sol": 0,
+    "pump_txs_count": 0,
+    "proj_wallet_link": null
+  },
+  "9jZdJu2eWsd6617a2EkiLqQ3ASxQWSz5nnWog6B4NHyc": {
+    "label": "Active_ignition_7_4txs",
+    "sample_oldest": "2026-05-06 01:38",
+    "sample_newest": "2026-05-06 04:05",
+    "tx_types": {
+      "TRANSFER": 76,
+      "UNKNOWN": 24
+    },
+    "role": "other",
+    "net_believe": 0,
+    "net_sol": -0.1175,
+    "top_funder": "no_large_sol_inflow_found",
+    "funder_amt_sol": 0,
+    "pump_txs_count": 0,
+    "proj_wallet_link": null
+  }
+}
