@@ -51,7 +51,7 @@ mock_site/
   index.html     mock signup page (wallet discovery, connect, sign, form)
   server.py      mock API: challenge/verify/signup, Origin check, real Sui signature
                  verification, optional --rate-limit-per-min, --captcha, --fail-rate
-deploy/          systemd units
+deploy/          install/uninstall scripts, systemd units, env template, logrotate, admin wrapper
 tests/           unit + real-browser end-to-end tests
 ```
 
@@ -139,59 +139,14 @@ Tests:
 .venv/bin/python -m unittest discover -s tests -t .
 ```
 
-## Running on a VPS (Ubuntu/Debian, systemd)
+## Running on a VPS
 
-```bash
-# 1. System packages and a dedicated user
-sudo apt update && sudo apt install -y python3 python3-venv git
-sudo useradd --system --create-home --home-dir /var/lib/suibot --shell /usr/sbin/nologin suibot
-sudo chmod 700 /var/lib/suibot
-
-# 2. Code + virtualenv + Chromium
-sudo git clone <your-repo-url> /opt/sui-signup-bot-src
-sudo cp -r /opt/sui-signup-bot-src/sui-signup-bot /opt/sui-signup-bot
-sudo chown -R suibot:suibot /opt/sui-signup-bot
-cd /opt/sui-signup-bot
-sudo -u suibot python3 -m venv .venv
-sudo -u suibot .venv/bin/pip install -r requirements.txt
-sudo .venv/bin/playwright install-deps chromium                       # OS libraries (root)
-sudo -u suibot env PLAYWRIGHT_BROWSERS_PATH=/opt/sui-signup-bot/.browsers \
-     .venv/bin/playwright install chromium
-
-# 3. Passphrase file (readable only by the service user)
-sudo install -d -m 750 -o root -g suibot /etc/suibot
-sudo bash -c 'umask 027; read -rsp "Passphrase: " p; echo; printf %s "$p" > /etc/suibot/passphrase'
-sudo chgrp suibot /etc/suibot/passphrase && sudo chmod 640 /etc/suibot/passphrase
-
-# 4. Wallets
-BOT="sudo -u suibot /opt/sui-signup-bot/.venv/bin/python -m suibot --db /var/lib/suibot/suibot.db --passphrase-file /etc/suibot/passphrase"
-$BOT wallets generate --count 5
-# or: sudo -u suibot tee /var/lib/suibot/keys.txt >/dev/null  (paste, Ctrl-D), then
-#     $BOT wallets import /var/lib/suibot/keys.txt && sudo shred -u /var/lib/suibot/keys.txt
-
-# 5. Dry run, then install the services
-$BOT run --dry-run
-sudo cp deploy/mock-site.service deploy/suibot.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now mock-site suibot
-
-# 6. Watch it
-journalctl -u suibot -f
-$BOT status --attempts
-```
-
-Service behaviour:
-- **Reboots.** Both units start at boot. The bot resumes from SQLite and
-  skips completed wallets.
-- **Stopping.** `systemctl stop suibot` sends SIGTERM. The bot finishes its
-  current step and exits cleanly.
-- **Human check.** On exit code 3 the service does not auto-restart. Look at
-  the screenshot in `/var/lib/suibot/screenshots/`, run
-  `$BOT reset --needs-human`, then `systemctl start suibot`.
-- **Wrong passphrase.** The service exits and systemd retries every 60 s.
-  Check `journalctl -u suibot` if the bot isn't making progress.
-- **Backups.** Back up `/var/lib/suibot/suibot.db` together with the
-  passphrase. Without the passphrase the keys can't be recovered.
+See **[DEPLOY.md](DEPLOY.md)**. It covers:
+- a one-command installer for Ubuntu 24.04 (`sudo ./deploy/install.sh`);
+- systemd services with a dedicated user and hardening;
+- config in `/etc/suibot/suibot.env`;
+- log rotation and daily backups;
+- crash and reboot recovery.
 
 ## Adding an adapter
 

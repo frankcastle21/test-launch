@@ -1,0 +1,50 @@
+[Unit]
+Description=Suibot local mock signup site (127.0.0.1 only)
+Documentation=file:///opt/suibot/DEPLOY.md
+After=network.target
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+Type=simple
+User=suibot
+Group=suibot
+EnvironmentFile=/etc/suibot/suibot.env
+Environment=PYTHONPATH=/opt/suibot
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/var/lib/suibot
+ExecStart=/opt/suibot/venv/bin/python -m mock_site
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+
+# Hardening
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ReadWritePaths=/var/lib/suibot /var/log/suibot
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+
+[Install]
+WantedBy=multi-user.target

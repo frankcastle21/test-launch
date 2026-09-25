@@ -1,0 +1,64 @@
+[Unit]
+Description=Suibot sequential wallet signup test bot (local mock target only)
+Documentation=file:///opt/suibot/DEPLOY.md
+Wants=network-online.target suibot-mock.service
+After=network-online.target suibot-mock.service
+# Stop retrying if it fails 5 times in 15 minutes (e.g. wrong passphrase).
+StartLimitIntervalSec=900
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=suibot
+Group=suibot
+EnvironmentFile=/etc/suibot/suibot.env
+Environment=PYTHONPATH=/opt/suibot
+Environment=PYTHONUNBUFFERED=1
+Environment=PLAYWRIGHT_BROWSERS_PATH=/opt/suibot/browsers
+Environment=HOME=/var/lib/suibot
+WorkingDirectory=/var/lib/suibot
+
+# Startup recovery: DB integrity check, passphrase check, wait for the target.
+# The runner itself re-queues any wallet left "in_progress" by a crash or power loss
+# and honours the persisted "next signup not before" time.
+ExecStartPre=/opt/suibot/venv/bin/python -m suibot preflight --wait 90
+ExecStart=/opt/suibot/venv/bin/python -m suibot run
+
+# Shutdown: SIGTERM goes to the bot only (KillMode=mixed), which finishes the
+# current step, commits state and exits. Chromium is cleaned up afterwards.
+KillSignal=SIGTERM
+KillMode=mixed
+TimeoutStopSec=120
+
+# Restart after crashes. Exit 0 = queue complete (no restart).
+# Exit 3 = CAPTCHA/human check: needs a person, so never auto-restart.
+Restart=on-failure
+RestartSec=60
+RestartPreventExitStatus=3
+
+# Hardening
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/suibot /var/log/suibot
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+# Kernel-level network allowlist: loopback only.
+IPAddressDeny=any
+IPAddressAllow=localhost
+
+[Install]
+WantedBy=multi-user.target

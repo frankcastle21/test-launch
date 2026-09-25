@@ -1,0 +1,27 @@
+[Unit]
+Description=Suibot database backup (consistent SQLite copy; keys stay encrypted)
+Documentation=file:///opt/suibot/DEPLOY.md
+
+[Service]
+Type=oneshot
+User=suibot
+Group=suibot
+EnvironmentFile=/etc/suibot/suibot.env
+Environment=PYTHONPATH=/opt/suibot
+WorkingDirectory=/var/lib/suibot
+ExecStart=/opt/suibot/venv/bin/python -m suibot backup
+
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+ReadWritePaths=/var/lib/suibot /var/log/suibot
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=

@@ -14,8 +14,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
+import logging.handlers
+import os
 import random
 import secrets
+import signal
 import sys
 import threading
 import time
@@ -28,6 +32,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from suibot.keys import verify_personal_message  # noqa: E402
 
 INDEX = (Path(__file__).parent / "index.html").read_bytes()
+log = logging.getLogger("mock_site")
+
+
+def env(name, default):
+    value = os.environ.get(name)
+    return value if value not in (None, "") else default
 
 
 class MockSite:
@@ -46,8 +56,13 @@ class MockSite:
             self.signups = json.loads(self.data_file.read_text())
 
     def _save(self):
-        if self.data_file:
-            self.data_file.write_text(json.dumps(self.signups, indent=1))
+        if self.data_file:  # atomic replace so a crash never leaves a torn file
+            tmp = self.data_file.with_name(self.data_file.name + ".tmp")
+            with open(tmp, "w") as f:
+                json.dump(self.signups, f, indent=1)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp, self.data_file)
 
     def handle(self, method, path, headers, body, own_origins):
         with self.lock:
@@ -112,7 +127,7 @@ def make_server(site: MockSite, host="127.0.0.1", port=8080) -> ThreadingHTTPSer
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
             if not getattr(self.server, "quiet", False):
-                sys.stderr.write("%s %s\n" % (self.address_string(), fmt % args))
+                log.info("%s %s", self.address_string(), fmt % args)
 
         def _send(self, status, payload, ctype="application/json"):
             data = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
@@ -148,20 +163,34 @@ def make_server(site: MockSite, host="127.0.0.1", port=8080) -> ThreadingHTTPSer
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-    p.add_argument("--host", default="127.0.0.1", choices=["127.0.0.1", "localhost"])
-    p.add_argument("--port", type=int, default=8080)
-    p.add_argument("--rate-limit-per-min", type=int, default=0)
-    p.add_argument("--captcha", action="store_true")
-    p.add_argument("--fail-rate", type=float, default=0.0)
-    p.add_argument("--data", help="persist signups to this JSON file")
+    p.add_argument("--host", default=env("MOCK_HOST", "127.0.0.1"),
+                   choices=["127.0.0.1", "localhost"])
+    p.add_argument("--port", type=int, default=env("MOCK_PORT", 8080))
+    p.add_argument("--rate-limit-per-min", type=int, default=env("MOCK_RATE_LIMIT_PER_MIN", 0))
+    p.add_argument("--captcha", action="store_true", default=env("MOCK_CAPTCHA", "0") == "1")
+    p.add_argument("--fail-rate", type=float, default=env("MOCK_FAIL_RATE", 0.0))
+    p.add_argument("--data", default=env("MOCK_DATA", None),
+                   help="persist signups to this JSON file")
+    p.add_argument("--log-file", default=env("MOCK_LOG_FILE", None))
     args = p.parse_args(argv)
+    handlers: list[logging.Handler] = [logging.StreamHandler()]
+    if args.log_file:
+        handlers.append(logging.handlers.WatchedFileHandler(args.log_file))
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s",
+                        handlers=handlers)
     site = MockSite(args.rate_limit_per_min, args.captcha, args.fail_rate, args.data)
     httpd = make_server(site, args.host, args.port)
-    print(f"Mock signup site: http://{args.host}:{args.port}/signup", flush=True)
+    signal.signal(signal.SIGTERM, lambda *_: threading.Thread(target=httpd.shutdown).start())
+    log.info("mock signup site on http://%s:%d/signup (captcha=%s, rate_limit=%s/min, "
+             "fail_rate=%s, data=%s)", args.host, args.port, args.captcha,
+             args.rate_limit_per_min, args.fail_rate, args.data)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
+    finally:
+        httpd.server_close()
+        log.info("mock signup site stopped")
 
 
 if __name__ == "__main__":

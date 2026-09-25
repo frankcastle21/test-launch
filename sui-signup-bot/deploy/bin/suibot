@@ -1,0 +1,17 @@
+#!/bin/sh
+# Admin wrapper: run the suibot CLI as the service user with the deployed config.
+#   sudo suibot status --attempts
+#   sudo suibot wallets generate --count 5
+#   sudo suibot wallets import - < keys.txt
+set -eu
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Run as root: sudo suibot $*" >&2
+    exit 1
+fi
+set -a
+. /etc/suibot/suibot.env
+set +a
+export PYTHONPATH=/opt/suibot PLAYWRIGHT_BROWSERS_PATH=/opt/suibot/browsers
+cd /var/lib/suibot
+umask 077
+exec runuser -u suibot -- /opt/suibot/venv/bin/python -m suibot "$@"

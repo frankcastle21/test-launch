@@ -1,2 +1,3 @@
-playwright>=1.45
-cryptography>=41
+# Versions tested together (Python 3.11/3.12, Ubuntu 24.04).
+playwright==1.56.0
+cryptography==50.0.1

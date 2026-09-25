@@ -110,8 +110,17 @@ class Store:
 
     # queue -----------------------------------------------------------------
     def recover_in_progress(self) -> int:
-        return self._exec("UPDATE wallets SET status = ? WHERE status = ?",
-                          (PENDING, IN_PROGRESS)).rowcount
+        """Re-queue wallets whose attempt was cut off (crash, kill, power loss) and log it."""
+        now = self.clock()
+        with self.db:
+            self.db.execute("BEGIN IMMEDIATE")
+            self.db.execute(
+                "INSERT INTO attempts (address, started_at, finished_at, success, result, error) "
+                "SELECT address, COALESCE(last_attempt_at, ?), ?, 0, 'interrupted', "
+                "'process stopped mid-attempt; re-queued' FROM wallets WHERE status = ?",
+                (now, now, IN_PROGRESS))
+            return self.db.execute("UPDATE wallets SET status = ? WHERE status = ?",
+                                   (PENDING, IN_PROGRESS)).rowcount
 
     def pending(self) -> list[sqlite3.Row]:
         return self.db.execute("SELECT * FROM wallets WHERE status = ? "

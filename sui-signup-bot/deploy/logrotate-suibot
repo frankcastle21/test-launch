@@ -1,0 +1,14 @@
+# Installed as /etc/logrotate.d/suibot. The bot and mock site use
+# WatchedFileHandler, so they reopen the log automatically after rotation.
+/var/log/suibot/*.log {
+    daily
+    rotate 14
+    maxsize 50M
+    missingok
+    notifempty
+    compress
+    delaycompress
+    dateext
+    create 0640 suibot suibot
+    su suibot suibot
+}

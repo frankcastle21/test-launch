@@ -5,9 +5,15 @@ from __future__ import annotations
 import argparse
 import getpass
 import logging
+import logging.handlers
 import os
 import signal
+import sqlite3
 import sys
+import time
+import urllib.error
+import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
 from . import db as D
@@ -15,6 +21,12 @@ from . import keys
 from .adapters import ADAPTERS
 
 PASS_ENV = "SUIBOT_PASSPHRASE"
+
+
+def env(name: str, default=None):
+    """Settings come from flags, else SUIBOT_* environment variables, else defaults."""
+    value = os.environ.get(name)
+    return value if value not in (None, "") else default
 
 
 def get_passphrase(args, confirm=False) -> str:
@@ -114,14 +126,74 @@ def cmd_reset(args):
     print(f"Moved {n} wallet(s) back to pending")
 
 
+def make_adapter(args):
+    try:
+        return ADAPTERS[args.adapter](args.url, referral=getattr(args, "referral", ""))
+    except ValueError as e:
+        sys.exit(str(e))
+
+
+def cmd_preflight(args):
+    """Startup checks used by systemd's ExecStartPre. Exits non-zero on any problem."""
+    log = logging.getLogger("suibot")
+    store = D.Store(args.db)
+    check = store.db.execute("PRAGMA quick_check").fetchone()[0]
+    if check != "ok":
+        sys.exit(f"Database integrity check failed: {check}")
+    if store.get_meta("kdf_check") is None:
+        sys.exit("Keystore is not initialised; add wallets first (suibot wallets generate/import)")
+    store.unlock(get_passphrase(args))
+    counts = store.counts()
+    log.info("database ok, passphrase ok, %d wallet(s): %s", store.wallet_count(), counts)
+    adapter = make_adapter(args)
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    deadline = time.monotonic() + args.wait
+    while True:
+        try:
+            opener.open(adapter.base_url, timeout=5).close()
+            break
+        except urllib.error.HTTPError:
+            break  # any HTTP answer means the service is up
+        except (urllib.error.URLError, OSError) as e:
+            if time.monotonic() >= deadline:
+                sys.exit(f"Signup target {adapter.base_url} not reachable after {args.wait}s: {e}")
+            time.sleep(2)
+    log.info("target %s is reachable", adapter.base_url)
+    if args.browser:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            b = p.chromium.launch()
+            log.info("chromium %s launches", b.version)
+            b.close()
+    print("preflight ok")
+    return 0
+
+
+def cmd_backup(args):
+    """Consistent online copy of the SQLite DB (keys stay encrypted), keeping the newest N."""
+    store = D.Store(args.db)
+    out_dir = Path(args.dir)
+    out_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
+    dest = out_dir / f"suibot-{stamp}.db"
+    fd = os.open(dest, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    os.close(fd)
+    target = sqlite3.connect(dest)
+    with target:
+        store.db.backup(target)
+    target.close()
+    backups = sorted(out_dir.glob("suibot-*.db"))
+    for old in backups[:-args.keep] if args.keep > 0 else []:
+        old.unlink()
+    print(f"backup written: {dest} (keeping {args.keep})")
+    return 0
+
+
 def cmd_run(args):
     from .browser import WalletBrowser
     from .runner import RunConfig, Runner
 
-    try:
-        adapter = ADAPTERS[args.adapter](args.url, referral=args.referral)
-    except ValueError as e:
-        sys.exit(str(e))
+    adapter = make_adapter(args)
     cfg = RunConfig(min_delay=args.min_delay, max_delay=args.max_delay,
                     max_attempts=args.max_attempts, once=args.once)
     try:
@@ -145,9 +217,12 @@ def cmd_run(args):
 
 def build_parser():
     p = argparse.ArgumentParser(prog="suibot", description=__doc__)
-    p.add_argument("--db", default="data/suibot.db")
-    p.add_argument("--passphrase-file")
-    p.add_argument("-v", "--verbose", action="store_true")
+    p.add_argument("--db", default=env("SUIBOT_DB", "data/suibot.db"))
+    p.add_argument("--passphrase-file", default=env("SUIBOT_PASSPHRASE_FILE"))
+    p.add_argument("--log-file", default=env("SUIBOT_LOG_FILE"),
+                   help="also log here (reopened automatically after logrotate)")
+    p.add_argument("-v", "--verbose", action="store_true",
+                   default=env("SUIBOT_VERBOSE", "0") == "1")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     w = sub.add_parser("wallets", help="manage wallets").add_subparsers(dest="wcmd",
@@ -165,18 +240,33 @@ def build_parser():
     l_ = w.add_parser("list")
     l_.set_defaults(func=cmd_list)
 
-    r = sub.add_parser("run", help="process the queue")
-    r.add_argument("--adapter", default="mock", choices=sorted(ADAPTERS))
-    r.add_argument("--url", default="http://127.0.0.1:8080")
-    r.add_argument("--referral", default="")
+    target = argparse.ArgumentParser(add_help=False)
+    target.add_argument("--adapter", default=env("SUIBOT_ADAPTER", "mock"), choices=sorted(ADAPTERS))
+    target.add_argument("--url", default=env("SUIBOT_URL", "http://127.0.0.1:8080"))
+
+    r = sub.add_parser("run", help="process the queue", parents=[target])
+    r.add_argument("--referral", default=env("SUIBOT_REFERRAL", ""))
     r.add_argument("--dry-run", action="store_true")
     r.add_argument("--once", action="store_true", help="one wallet, then exit")
     r.add_argument("--headed", action="store_true", help="show the browser (needs a display)")
-    r.add_argument("--min-delay", type=float, default=240, help="seconds, default 240")
-    r.add_argument("--max-delay", type=float, default=420, help="seconds, default 420")
-    r.add_argument("--max-attempts", type=int, default=3)
-    r.add_argument("--screenshots", default="data/screenshots")
+    r.add_argument("--min-delay", type=float, default=env("SUIBOT_MIN_DELAY", 240),
+                   help="seconds, default 240")
+    r.add_argument("--max-delay", type=float, default=env("SUIBOT_MAX_DELAY", 420),
+                   help="seconds, default 420")
+    r.add_argument("--max-attempts", type=int, default=env("SUIBOT_MAX_ATTEMPTS", 3))
+    r.add_argument("--screenshots", default=env("SUIBOT_SCREENSHOTS", "data/screenshots"))
     r.set_defaults(func=cmd_run)
+
+    pf = sub.add_parser("preflight", help="check DB, passphrase and target before starting",
+                        parents=[target])
+    pf.add_argument("--wait", type=int, default=60, help="seconds to wait for the target")
+    pf.add_argument("--browser", action="store_true", help="also test-launch Chromium")
+    pf.set_defaults(func=cmd_preflight)
+
+    b = sub.add_parser("backup", help="write a consistent copy of the database")
+    b.add_argument("--dir", default=env("SUIBOT_BACKUP_DIR", "data/backups"))
+    b.add_argument("--keep", type=int, default=env("SUIBOT_BACKUP_KEEP", 14))
+    b.set_defaults(func=cmd_backup)
 
     s = sub.add_parser("status")
     s.add_argument("--attempts", action="store_true", help="also print attempt history")
@@ -191,8 +281,12 @@ def build_parser():
 
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
+    handlers: list[logging.Handler] = [logging.StreamHandler()]
+    if args.log_file:
+        Path(args.log_file).parent.mkdir(parents=True, exist_ok=True)
+        handlers.append(logging.handlers.WatchedFileHandler(args.log_file))
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
-                        format="%(asctime)s %(levelname)s %(message)s")
+                        format="%(asctime)s %(levelname)s %(message)s", handlers=handlers)
     try:
         return args.func(args) or 0
     except keys.WrongPassphrase as e:
