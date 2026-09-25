@@ -1,0 +1,6 @@
+data/
+*.db
+*.db-*
+keys*.txt
+passphrase
+__pycache__/

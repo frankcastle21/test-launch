@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock Signup</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; background: #0f1115; color: #e8e8ea; display: grid; place-items: center; min-height: 100vh; margin: 0; }
+  .card { background: #181b22; border: 1px solid #2a2f3a; border-radius: 12px; padding: 28px; width: min(420px, calc(100vw - 32px)); }
+  h1 { margin: 0 0 4px; font-size: 22px; } p.sub { margin: 0 0 20px; color: #9aa0ab; }
+  button { font: inherit; padding: 10px 14px; border-radius: 8px; border: 0; background: #4f7cff; color: #fff; cursor: pointer; width: 100%; }
+  button:disabled { opacity: .5; cursor: default; }
+  #wallet-list button { background: #232836; margin-top: 8px; text-align: left; }
+  label { display: block; margin: 14px 0 6px; color: #9aa0ab; font-size: 13px; }
+  input { font: inherit; width: 100%; box-sizing: border-box; padding: 9px 10px; border-radius: 8px; border: 1px solid #2a2f3a; background: #0f1115; color: inherit; }
+  #account { font-family: ui-monospace, monospace; font-size: 12px; word-break: break-all; color: #9aa0ab; margin: 12px 0 0; }
+  #result { margin-top: 16px; min-height: 1.5em; }
+  #result[data-state=registered], #result[data-state=already_registered] { color: #5ad19a; }
+  #result[data-state=error], #result[data-state=rejected], #result[data-state=rate_limited], #result[data-state=human_check] { color: #ff8a80; }
+  .captcha { margin-top: 14px; padding: 12px; border: 1px dashed #ff8a80; border-radius: 8px; color: #ff8a80; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>Mock signup</h1>
+  <p class="sub">Local test page. <span id="count">…</span> signed up.</p>
+
+  <section id="step-connect">
+    <button id="connect" type="button">Connect wallet</button>
+    <div id="wallet-list" hidden></div>
+  </section>
+
+  <form id="step-form" hidden>
+    <div id="account"></div>
+    <label for="referral">Referral code (optional)</label>
+    <input id="referral" name="referral" maxlength="20" autocomplete="off">
+    <div id="captcha-slot"></div>
+    <button id="submit" type="submit" style="margin-top:16px">Sign up</button>
+  </form>
+
+  <div id="result" role="status" aria-live="polite"></div>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const wallets = [];
+  let wallet = null, account = null;
+
+  // Wallet Standard discovery (app side).
+  const api = { register: (...ws) => { wallets.push(...ws); return () => {}; } };
+  window.addEventListener('wallet-standard:register-wallet', (e) => e.detail(api));
+  window.dispatchEvent(new CustomEvent('wallet-standard:app-ready', { detail: api }));
+
+  const setResult = (state, text) => { const r = $('result'); r.dataset.state = state; r.textContent = text; };
+  const api_ = async (method, path, body, token) => {
+    const headers = {};
+    if (body) headers['content-type'] = 'application/json';
+    if (token) headers.authorization = `Bearer ${token}`;
+    const res = await fetch(path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    const data = await res.json().catch(() => ({}));
+    return { status: res.status, data };
+  };
+
+  api_('GET', '/api/signup/total').then(({ data }) => { $('count').textContent = data.total ?? '?'; });
+  api_('GET', '/api/config').then(({ data }) => {
+    if (data.captcha) $('captcha-slot').innerHTML =
+      '<div class="captcha" data-captcha>Human verification required (mock CAPTCHA). Automation must stop here.</div>';
+  });
+
+  $('connect').onclick = () => {
+    const list = $('wallet-list');
+    const usable = wallets.filter((w) => w.features['sui:signPersonalMessage'] && w.features['standard:connect']);
+    list.innerHTML = usable.length ? '' : '<p>No Sui wallet found.</p>';
+    for (const w of usable) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.dataset.wallet = w.name; b.textContent = w.name;
+      b.onclick = async () => {
+        const { accounts } = await w.features['standard:connect'].connect();
+        wallet = w; account = accounts[0];
+        $('account').textContent = account.address; $('account').dataset.address = account.address;
+        $('step-connect').hidden = true; $('step-form').hidden = false;
+      };
+      list.appendChild(b);
+    }
+    list.hidden = false;
+  };
+
+  $('step-form').onsubmit = async (e) => {
+    e.preventDefault();
+    $('submit').disabled = true;
+    setResult('busy', 'Waiting for signature…');
+    try {
+      const ch = await api_('POST', '/api/auth/challenge', { address: account.address });
+      if (ch.status !== 200) return finish(ch);
+      const { signature } = await wallet.features['sui:signPersonalMessage'].signPersonalMessage({
+        message: new TextEncoder().encode(ch.data.message), account });
+      const v = await api_('POST', '/api/auth/verify', { address: account.address, message: ch.data.message, signature, network: 'mainnet' });
+      if (v.status !== 200) return finish(v);
+      const existing = await api_('GET', '/api/signup', null, v.data.token);
+      if (existing.data.signup) return setResult('already_registered', 'This wallet is already signed up.');
+      finish(await api_('POST', '/api/signup', { referral: $('referral').value.trim() || null, captcha: null }, v.data.token));
+    } catch (err) {
+      setResult('error', `Error: ${err.message}`);
+    } finally {
+      $('submit').disabled = false;
+    }
+  };
+
+  function finish({ status, data }) {
+    if (status === 200 && data.signup) { setResult('registered', "You're signed up."); $('count').textContent = data.total; }
+    else if (status === 409) setResult('already_registered', data.error || 'Already signed up.');
+    else if (status === 429) setResult('rate_limited', data.error || 'Too many requests. Try later.');
+    else if (status === 428) setResult('human_check', data.error || 'Complete the human verification.');
+    else if (status >= 400 && status < 500) setResult('rejected', data.error || `Rejected (${status}).`);
+    else setResult('error', data.error || `Server error (${status}).`);
+  }
+})();
+</script>
+</body>
+</html>

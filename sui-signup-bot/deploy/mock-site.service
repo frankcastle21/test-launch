@@ -1,0 +1,13 @@
+[Unit]
+Description=Mock Sui signup site (loopback only)
+After=network.target
+
+[Service]
+User=suibot
+WorkingDirectory=/opt/sui-signup-bot
+ExecStart=/opt/sui-signup-bot/.venv/bin/python -m mock_site --host 127.0.0.1 --port 8080 --data /var/lib/suibot/mock-signups.json
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
