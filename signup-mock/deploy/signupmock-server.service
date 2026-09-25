@@ -1,0 +1,18 @@
+[Unit]
+Description=signupmock local mock signup API (loopback only)
+After=network.target
+
+[Service]
+Type=simple
+User=signupmock
+WorkingDirectory=/opt/signup-mock
+ExecStart=/opt/signup-mock/.venv/bin/python -m signupmock serve --host 127.0.0.1 --port 8787 --fail-rate 0.05
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

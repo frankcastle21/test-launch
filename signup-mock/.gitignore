@@ -1,0 +1,6 @@
+state.db*
+events.jsonl
+wallets*.json
+wallets*.enc
+*.passphrase
+__pycache__/

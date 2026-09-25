@@ -1,0 +1,32 @@
+[Unit]
+Description=signupmock queue runner (talks only to the local mock API)
+After=network.target signupmock-server.service
+Wants=signupmock-server.service
+
+[Service]
+Type=simple
+User=signupmock
+WorkingDirectory=/var/lib/signupmock
+# Passphrase file must be mode 0600 and owned by the service user.
+ExecStart=/opt/signup-mock/.venv/bin/python -m signupmock run \
+    --wallets /var/lib/signupmock/wallets.enc \
+    --passphrase-file /etc/signupmock/passphrase \
+    --state /var/lib/signupmock/state.db \
+    --log /var/lib/signupmock/events.jsonl \
+    --base-url http://127.0.0.1:8787
+# SIGTERM lets the current step finish; state is committed before every request.
+KillSignal=SIGTERM
+TimeoutStopSec=60
+# Restart after crashes/reboots (completed wallets are never repeated), but NOT
+# after the circuit breaker trips (exit 2): that needs a human to look first.
+Restart=on-failure
+RestartSec=60
+RestartPreventExitStatus=2
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/signupmock
+
+[Install]
+WantedBy=multi-user.target
